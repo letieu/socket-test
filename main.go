@@ -1,11 +1,16 @@
 package main
 
 import (
-	"github.com/gorilla/websocket"
+	"embed"
 	"log"
 	"net/http"
 	"sync"
+
+	"github.com/gorilla/websocket"
 )
+
+//go:embed index.html client.html
+var embedFiles embed.FS
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -47,11 +52,27 @@ func main() {
 }
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "index.html")
+	file, err := embedFiles.ReadFile("index.html")
+
+	if err != nil {
+		http.Error(w, "File not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+	w.Write(file)
 }
 
 func serveClient(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "client.html")
+	file, err := embedFiles.ReadFile("client.html")
+
+	if err != nil {
+		http.Error(w, "File not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+	w.Write(file)
 }
 
 func handleSocketConnections(w http.ResponseWriter, r *http.Request) {
