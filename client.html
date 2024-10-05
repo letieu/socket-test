@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Client</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+      #messages {
+        border: 1px solid #ccc;
+        height: 300px;
+        overflow-y: scroll;
+        padding: 10px;
+      }
+      #messageForm {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>User Client</h1>
+    <div id="messages"></div>
+    <form id="messageForm">
+      <input type="text" id="messageContent" placeholder="Message" required />
+      <button type="submit">Send</button>
+    </form>
+
+    <script>
+      const ws = new WebSocket("ws://localhost:8080/ws");
+      const messagesDiv = document.getElementById("messages");
+      const messageForm = document.getElementById("messageForm");
+      const messageContentInput = document.getElementById("messageContent");
+
+      ws.onopen = () => {
+        console.log("Connected to the server");
+      };
+
+      ws.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        const messageElement = document.createElement("div");
+        messageElement.textContent = `[${message.client}][${message.type}] ${message.content}`;
+        messagesDiv.appendChild(messageElement);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      };
+
+      ws.onclose = () => {
+        console.log("Disconnected from the server");
+      };
+
+      messageForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const messageContent = messageContentInput.value;
+        const message = {
+          Content: messageContent,
+        };
+        ws.send(JSON.stringify(message));
+        messageContentInput.value = "";
+      });
+    </script>
+  </body>
+</html>

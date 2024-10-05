@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monitor UI</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+      #messages {
+        border: 1px solid #ccc;
+        height: 300px;
+        overflow-y: scroll;
+        padding: 10px;
+      }
+      #messageForm {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Monitor UI</h1>
+    <div id="messages"></div>
+    <form id="messageForm">
+      <input
+        type="text"
+        id="targetClient"
+        placeholder="Target Client ID"
+        required
+      />
+      <input type="text" id="messageContent" placeholder="Message" required />
+      <button type="submit">Send</button>
+    </form>
+
+    <script>
+      const ws = new WebSocket("ws://localhost:8080/ws?monitor=true");
+      const messagesDiv = document.getElementById("messages");
+      const messageForm = document.getElementById("messageForm");
+      const targetClientInput = document.getElementById("targetClient");
+      const messageContentInput = document.getElementById("messageContent");
+
+      ws.onopen = () => {
+        console.log("Connected to the server");
+      };
+
+      ws.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        const messageElement = document.createElement("div");
+        messageElement.textContent = `[${message.client}]  [${message.type}]  ${message.content}`;
+
+        switch (message.type) {
+          case "connect":
+            messageElement.style.color = "green";
+            break;
+          case "disconnect":
+            messageElement.style.color = "red";
+            break;
+          default:
+            messageElement.style.color = "blue";
+            break;
+        }
+
+        messagesDiv.appendChild(messageElement);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      };
+
+      ws.onclose = () => {
+        console.log("Disconnected from the server");
+      };
+
+      messageForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const targetClient = targetClientInput.value;
+        const messageContent = messageContentInput.value;
+        const message = {
+          Type: "message",
+          Content: messageContent,
+          Target: targetClient,
+          Client: "monitor",
+        };
+        ws.send(JSON.stringify(message));
+        messageContentInput.value = "";
+      });
+    </script>
+  </body>
+</html>
