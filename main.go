@@ -46,12 +46,12 @@ func main() {
 	go handleMessages()
 
     port := os.Getenv("S_PORT")
-    log.Printf("Starting server on port %s", port)
 
     if port == "" {
         port = "8082"
     }
 
+    log.Printf("Starting server on port %s", port)
 	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)

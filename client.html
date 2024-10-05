@@ -28,7 +28,9 @@
     </form>
 
     <script>
-      const ws = new WebSocket("ws://localhost:8082/ws");
+      const host = window.location.hostname;
+      const port = window.location.port;
+      const ws = new WebSocket(`ws://${host}:${port}/ws`);
       const messagesDiv = document.getElementById("messages");
       const messageForm = document.getElementById("messageForm");
       const messageContentInput = document.getElementById("messageContent");
