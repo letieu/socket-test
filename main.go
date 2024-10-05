@@ -4,6 +4,7 @@ import (
 	"embed"
 	"log"
 	"net/http"
+	"os"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -44,8 +45,14 @@ func main() {
 
 	go handleMessages()
 
-	log.Println("Server started on :8080")
-	err := http.ListenAndServe(":8080", nil)
+    port := os.Getenv("S_PORT")
+    log.Printf("Starting server on port %s", port)
+
+    if port == "" {
+        port = "8082"
+    }
+
+	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
